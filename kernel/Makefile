@@ -105,22 +105,22 @@ all: bin-$(ARCH)/$(OUTPUT)
 -include $(HEADER_DEPS)
 
 # Link rules for the final executable.
-bin-$(ARCH)/$(OUTPUT): GNUmakefile linker-$(ARCH).ld $(OBJ)
+bin-$(ARCH)/$(OUTPUT): Makefile linker-$(ARCH).ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $@
 
 # Compilation rules for *.c files.
-obj-$(ARCH)/%.c.o: src/%.c GNUmakefile
+obj-$(ARCH)/%.c.o: src/%.c Makefile
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.S files.
-obj-$(ARCH)/%.S.o: src/%.S GNUmakefile
+obj-$(ARCH)/%.S.o: src/%.S Makefile
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.asm (nasm) files.
-obj-$(ARCH)/%.asm.o: src/%.asm GNUmakefile
+obj-$(ARCH)/%.asm.o: src/%.asm Makefile
 	mkdir -p "$$(dirname $@)"
 	nasm $(NASMFLAGS) $< -o $@
 
