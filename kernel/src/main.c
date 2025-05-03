@@ -90,15 +90,10 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 // Halt and catch fire function.
 static void hcf(void) {
     for (;;) {
-#if defined (__x86_64__)
         asm ("hlt");
-#elif defined (__aarch64__) || defined (__riscv)
-        asm ("wfi");
-#elif defined (__loongarch64)
-        asm ("idle 0");
-#endif
     }
 }
+
 
 // The following will be our kernel's entry point.
 // If renaming kmain() to something else, make sure to change the
@@ -110,8 +105,7 @@ void kmain(void) {
     }
 
     // Ensure we got a framebuffer.
-    if (framebuffer_request.response == NULL
-     || framebuffer_request.response->framebuffer_count < 1) {
+    if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
         hcf();
     }
 
@@ -121,7 +115,7 @@ void kmain(void) {
     // Note: we assume the framebuffer model is RGB with 32-bit pixels.
     for (size_t i = 0; i < 100; i++) {
         volatile uint32_t *fb_ptr = framebuffer->address;
-        fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xffffff;
+        fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xFF0000;
     }
 
     // We're done, just hang...
