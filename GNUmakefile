@@ -157,12 +157,8 @@ limine/limine:
 		LDFLAGS="$(HOST_LDFLAGS)" \
 		LIBS="$(HOST_LIBS)"
 
-kernel-deps:
-	./kernel/get-deps
-	touch kernel-deps
-
 .PHONY: kernel
-kernel: kernel-deps
+kernel:
 	$(MAKE) -C kernel
 
 $(IMAGE_NAME).iso: limine/limine kernel
@@ -248,4 +244,4 @@ clean:
 .PHONY: distclean
 distclean:
 	$(MAKE) -C kernel distclean
-	rm -rf iso_root *.iso *.hdd kernel-deps limine ovmf
+	rm -rf iso_root *.iso *.hdd limine ovmf
