@@ -87,6 +87,8 @@ int memcmp(const void *s1, const void *s2, size_t n) {
     return 0;
 }
 
+extern void halt_and_catch_fire();
+
 // Halt and catch fire function.
 static void hcf(void) {
     for (;;) {
@@ -101,12 +103,12 @@ static void hcf(void) {
 void kmain(void) {
     // Ensure the bootloader actually understands our base revision (see spec).
     if (LIMINE_BASE_REVISION_SUPPORTED == false) {
-        hcf();
+        halt_and_catch_fire();
     }
 
     // Ensure we got a framebuffer.
     if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
-        hcf();
+        halt_and_catch_fire();
     }
 
     // Fetch the first framebuffer.
@@ -119,5 +121,5 @@ void kmain(void) {
     }
 
     // We're done, just hang...
-    hcf();
+    halt_and_catch_fire();
 }

@@ -91,9 +91,10 @@ override LDFLAGS += \
 # object and header dependency file names.
 override SRCFILES := $(shell cd src && find -L * -type f | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
+override C3FILES := $(filter %.c3,$(SRCFILES))
 override ASFILES := $(filter %.S,$(SRCFILES))
 override NASMFILES := $(filter %.asm,$(SRCFILES))
-override OBJ := $(addprefix obj-$(ARCH)/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o))
+override OBJ := $(addprefix obj-$(ARCH)/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o) $(ASFILES:.S=.S.o))
 override OBJ += $(addprefix obj-$(ARCH)/,$(NASMFILES:.asm=.asm.o))
 override HEADER_DEPS := $(addprefix obj-$(ARCH)/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 
@@ -108,6 +109,11 @@ all: bin-$(ARCH)/$(OUTPUT)
 bin-$(ARCH)/$(OUTPUT): Makefile linker-$(ARCH).ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $@
+
+# Compilation rules for *.c3 files.
+obj-$(ARCH)/%.c3.o: src/%.c3 Makefile
+	mkdir -p "$$(dirname $@)"
+	c3c compile-only --single-module=yes --use-stdlib=no --emit-stdlib=no $< -o $@
 
 # Compilation rules for *.c files.
 obj-$(ARCH)/%.c.o: src/%.c Makefile
