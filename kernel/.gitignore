@@ -1,6 +1,5 @@
 /compile_commands.json
 /.cache
 /src/cc-runtime
-/src/limine.h
 /bin-*
 /obj-*
