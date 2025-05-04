@@ -1,5 +1,4 @@
 /compile_commands.json
 /.cache
-/src/cc-runtime
 /bin-*
 /obj-*

@@ -21,13 +21,6 @@ CPPFLAGS :=
 # User controllable linker flags. We set none by default.
 LDFLAGS :=
 
-# Ensure the dependencies have been obtained.
-ifneq ($(shell ( test '$(MAKECMDGOALS)' = clean || test '$(MAKECMDGOALS)' = distclean ); echo $$?),0)
-    ifeq ($(shell ( ! test -d freestnd-c-hdrs || ! test -d src/cc-runtime || ! test -f src/limine.h ); echo $$?),0)
-        $(error Please run the ./get-deps script first)
-    endif
-endif
-
 # Check if CC is Clang.
 override CC_IS_CLANG := $(shell ! $(CC) --version 2>/dev/null | grep 'clang' >/dev/null 2>&1; echo $$?)
 
