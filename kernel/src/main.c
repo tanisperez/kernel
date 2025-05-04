@@ -35,7 +35,6 @@ static volatile LIMINE_REQUESTS_END_MARKER;
 // Implement them as the C specification mandates.
 // DO NOT remove or rename these functions, or stuff will eventually break!
 // They CAN be moved to a different .c file.
-
 void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
     uint8_t *restrict pdest = (uint8_t *restrict)dest;
     const uint8_t *restrict psrc = (const uint8_t *restrict)src;
@@ -85,33 +84,4 @@ int memcmp(const void *s1, const void *s2, size_t n) {
     }
 
     return 0;
-}
-
-extern void halt_and_catch_fire();
-
-// The following will be our kernel's entry point.
-// If renaming kmain() to something else, make sure to change the
-// linker script accordingly.
-void old_kmain(void) {
-    // Ensure the bootloader actually understands our base revision (see spec).
-    if (LIMINE_BASE_REVISION_SUPPORTED == false) {
-        halt_and_catch_fire();
-    }
-
-    // Ensure we got a framebuffer.
-    if (framebuffer_request.response == NULL || framebuffer_request.response->framebuffer_count < 1) {
-        halt_and_catch_fire();
-    }
-
-    // Fetch the first framebuffer.
-    struct limine_framebuffer *framebuffer = framebuffer_request.response->framebuffers[0];
-
-    // Note: we assume the framebuffer model is RGB with 32-bit pixels.
-    for (size_t i = 0; i < 100; i++) {
-        volatile uint32_t *fb_ptr = framebuffer->address;
-        fb_ptr[i * (framebuffer->pitch / 4) + i] = 0xFF0000;
-    }
-
-    // We're done, just hang...
-    halt_and_catch_fire();
 }
