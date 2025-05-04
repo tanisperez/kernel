@@ -2,7 +2,7 @@
 
 ## Bootloader
 
-This Kernel will use Limine as the booloader.
+This Kernel will use Limine v9.x-binary as the booloader.
 
 - [Limine Base Bones](https://wiki.osdev.org/Limine_Bare_Bones)
 - [Limine C Template](https://github.com/limine-bootloader/limine-c-template)
