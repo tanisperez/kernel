@@ -1,9 +1,6 @@
 # Nuke built-in rules and variables.
 MAKEFLAGS += -rR
-.SUFFIXES:
 
-# This is the name that our final executable will have.
-# Change as needed.
 override OUTPUT := kernel
 
 # Target architecture to build for. Default to x86_64.
@@ -13,45 +10,17 @@ ARCH := x86_64
 CC := cc
 
 # User controllable C flags.
-CFLAGS := -g -O2 -pipe
-
-# User controllable C preprocessor flags. We set none by default.
-CPPFLAGS :=
-
-# User controllable linker flags. We set none by default.
-LDFLAGS :=
-
-# Check if CC is Clang.
-override CC_IS_CLANG := $(shell ! $(CC) --version 2>/dev/null | grep 'clang' >/dev/null 2>&1; echo $$?)
-
-# Internal C flags that should not be changed by the user.
-override CFLAGS += \
-    -Wall \
-    -Wextra \
-    -std=gnu11 \
-    -nostdinc \
-    -ffreestanding \
-    -fno-stack-protector \
-    -fno-stack-check \
-    -fno-PIC \
-    -ffunction-sections \
-    -fdata-sections
-
-# Internal C preprocessor flags that should not be changed by the user.
-override CPPFLAGS := \
-    -I src \
-    -isystem src/freestnd-c-hdrs \
-    $(CPPFLAGS) \
-    -DLIMINE_API_REVISION=3 \
-    -MMD \
-    -MP
-
-# Architecture specific internal flags.
-ifeq ($(CC_IS_CLANG),1)
-	override CC += \
-		-target x86_64-unknown-none
-endif
-override CFLAGS += \
+CFLAGS := -g -O2 -pipe \
+	-Wall \
+	-Wextra \
+	-std=gnu11 \
+	-nostdinc \
+	-ffreestanding \
+	-fno-stack-protector \
+	-fno-stack-check \
+	-fno-PIC \
+	-ffunction-sections \
+	-fdata-sections \
 	-m64 \
 	-march=x86-64 \
 	-mno-80387 \
@@ -60,17 +29,24 @@ override CFLAGS += \
 	-mno-sse2 \
 	-mno-red-zone \
 	-mcmodel=kernel
-override LDFLAGS += \
-	-Wl,-m,elf_x86_64
 
-# Internal linker flags that should not be changed by the user.
-override LDFLAGS += \
-    -Wl,--build-id=none \
-    -nostdlib \
-    -static \
-    -z max-page-size=0x1000 \
-    -Wl,--gc-sections \
-    -T linker-$(ARCH).ld
+# User controllable C preprocessor flags. We set none by default.
+CPPFLAGS := \
+	-I src \
+	-isystem src/freestnd-c-hdrs \
+	$(CPPFLAGS) \
+	-DLIMINE_API_REVISION=3 \
+	-MMD \
+	-MP
+
+# User controllable linker flags. We set none by default.
+LDFLAGS := -Wl,-m,elf_x86_64 \
+	-Wl,--build-id=none \
+	-nostdlib \
+	-static \
+	-z max-page-size=0x1000 \
+	-Wl,--gc-sections \
+	-T linker-$(ARCH).ld
 
 # Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
 # object and header dependency file names.
