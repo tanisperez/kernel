@@ -21,9 +21,6 @@ CFLAGS := -g -O2 -pipe
 # User controllable C preprocessor flags. We set none by default.
 CPPFLAGS :=
 
-# User controllable nasm flags.
-NASMFLAGS := -F dwarf -g -Wall
-
 # User controllable linker flags. We set none by default.
 LDFLAGS :=
 
@@ -75,8 +72,6 @@ override CFLAGS += \
 	-mcmodel=kernel
 override LDFLAGS += \
 	-Wl,-m,elf_x86_64
-override NASMFLAGS += \
-	-f elf64
 
 # Internal linker flags that should not be changed by the user.
 override LDFLAGS += \
@@ -92,11 +87,8 @@ override LDFLAGS += \
 override SRCFILES := $(shell cd src && find -L * -type f | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
 override C3FILES := $(filter %.c3,$(SRCFILES))
-override ASFILES := $(filter %.S,$(SRCFILES))
-override NASMFILES := $(filter %.asm,$(SRCFILES))
-override OBJ := $(addprefix obj-$(ARCH)/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o) $(ASFILES:.S=.S.o))
-override OBJ += $(addprefix obj-$(ARCH)/,$(NASMFILES:.asm=.asm.o))
-override HEADER_DEPS := $(addprefix obj-$(ARCH)/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
+override OBJ := $(addprefix obj-$(ARCH)/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o))
+override HEADER_DEPS := $(addprefix obj-$(ARCH)/,$(CFILES:.c=.c.d))
 
 # Default target. This must come first, before header dependencies.
 .PHONY: all
@@ -122,34 +114,7 @@ obj-$(ARCH)/%.c.o: src/%.c Makefile
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
-# Compilation rules for *.S files.
-obj-$(ARCH)/%.S.o: src/%.S Makefile
-	mkdir -p "$$(dirname $@)"
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
-
-# Compilation rules for *.asm (nasm) files.
-obj-$(ARCH)/%.asm.o: src/%.asm Makefile
-	mkdir -p "$$(dirname $@)"
-	nasm $(NASMFLAGS) $< -o $@
-
 # Remove object files and the final executable.
 .PHONY: clean
 clean:
 	rm -rf bin-$(ARCH) obj-$(ARCH)
-
-# Remove everything built and generated including downloaded dependencies.
-.PHONY: distclean
-distclean:
-	rm -rf bin-* obj-* freestnd-c-hdrs src/cc-runtime src/limine.h
-
-# Install the final built executable to its final on-root location.
-.PHONY: install
-install: all
-	install -d "$(DESTDIR)$(PREFIX)/share/$(OUTPUT)"
-	install -m 644 bin-$(ARCH)/$(OUTPUT) "$(DESTDIR)$(PREFIX)/share/$(OUTPUT)/$(OUTPUT)-$(ARCH)"
-
-# Try to undo whatever the "install" target did.
-.PHONY: uninstall
-uninstall:
-	rm -f "$(DESTDIR)$(PREFIX)/share/$(OUTPUT)/$(OUTPUT)-$(ARCH)"
-	-rmdir "$(DESTDIR)$(PREFIX)/share/$(OUTPUT)"
