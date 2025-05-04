@@ -110,10 +110,12 @@ bin-$(ARCH)/$(OUTPUT): Makefile linker-$(ARCH).ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $@
 
+## TODO: Cambiar el Makefile para usar sólo un comando c3c que compile todo
+
 # Compilation rules for *.c3 files.
 obj-$(ARCH)/%.c3.o: src/%.c3 Makefile
 	mkdir -p "$$(dirname $@)"
-	c3c compile-only --single-module=yes --use-stdlib=no --emit-stdlib=no $< -o $@
+	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no $< -o $@
 
 # Compilation rules for *.c files.
 obj-$(ARCH)/%.c.o: src/%.c Makefile
