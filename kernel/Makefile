@@ -40,7 +40,7 @@ override CFLAGS += \
 # Internal C preprocessor flags that should not be changed by the user.
 override CPPFLAGS := \
     -I src \
-    -isystem freestnd-c-hdrs \
+    -isystem src/freestnd-c-hdrs \
     $(CPPFLAGS) \
     -DLIMINE_API_REVISION=3 \
     -MMD \
