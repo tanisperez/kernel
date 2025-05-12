@@ -9,6 +9,11 @@ This Kernel will use Limine v9.x-binary as the booloader.
 
 This repository will demonstrate how to set up a basic kernel in C using Limine.
 
+### Included Software
+
+- Limine: branch v9.x-binary
+- ovmf-code: https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-x86_64.fd
+
 ### Dependencies
 
 Any `make` command depends on GNU make (`gmake`) and is expected to be run using it. This usually means using `make` on most GNU/Linux distros, or `gmake` on other non-GNU systems.
