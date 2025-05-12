@@ -1,3 +1,5 @@
 *.hdd
 *.iso
 .idea
+limine/
+ovmf/
