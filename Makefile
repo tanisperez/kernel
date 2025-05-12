@@ -2,10 +2,13 @@
 MAKEFLAGS += -rR
 .SUFFIXES:
 
+# Target architecture to build for. Default to x86_64.
+ARCH := x86_64
+
 # Default user QEMU flags. These are appended to the QEMU command calls.
 QEMUFLAGS := -m 2G
 
-override IMAGE_NAME := kernel-x86_64
+override IMAGE_NAME := kernel-$(ARCH)
 
 # Toolchain for building the 'limine' executable for the host.
 HOST_CC := cc
@@ -15,36 +18,40 @@ all: $(IMAGE_NAME).iso
 
 all-hdd: $(IMAGE_NAME).hdd
 
-run: run-x86_64
+run: run-$(ARCH)
 
-run-hdd: run-hdd-x86_64
+run-hdd: run-hdd-$(ARCH)
 
-run-x86_64: $(IMAGE_NAME).iso
-	qemu-system-x86_64 \
+run-x86_64: ovmf/ovmf-code-$(ARCH).fd $(IMAGE_NAME).iso
+	qemu-system-$(ARCH) \
 		-M q35 \
-		-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-x86_64.fd,readonly=on \
+		-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on \
 		-cdrom $(IMAGE_NAME).iso \
 		$(QEMUFLAGS)
 
-run-hdd-x86_64: $(IMAGE_NAME).hdd
-	qemu-system-x86_64 \
+run-hdd-x86_64: ovmf/ovmf-code-$(ARCH).fd $(IMAGE_NAME).hdd
+	qemu-system-$(ARCH) \
 		-M q35 \
-		-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-x86_64.fd,readonly=on \
+		-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-$(ARCH).fd,readonly=on \
 		-hda $(IMAGE_NAME).hdd \
 		$(QEMUFLAGS)
 
 run-bios: $(IMAGE_NAME).iso
-	qemu-system-x86_64 \
+	qemu-system-$(ARCH) \
 		-M q35 \
 		-cdrom $(IMAGE_NAME).iso \
 		-boot d \
 		$(QEMUFLAGS)
 
 run-hdd-bios: $(IMAGE_NAME).hdd
-	qemu-system-x86_64 \
+	qemu-system-$(ARCH) \
 		-M q35 \
 		-hda $(IMAGE_NAME).hdd \
 		$(QEMUFLAGS)
+
+ovmf/ovmf-code-$(ARCH).fd:
+	mkdir -p ovmf
+	curl -Lo $@ https://github.com/osdev0/edk2-ovmf-nightly/releases/latest/download/ovmf-code-$(ARCH).fd
 
 limine/limine:
 	rm -rf limine
