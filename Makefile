@@ -1,17 +1,11 @@
 # Disable built-in rules and variables.
 MAKEFLAGS += -rR
 
-# Default user QEMU flags. These are appended to the QEMU command calls.
-QEMUFLAGS := -m 2G
-
+# Image name with the Kernel
 IMAGE_NAME := kernel-x86_64
 
-# Toolchain for building the 'limine' executable for the host.
-HOST_CC := cc
-HOST_CFLAGS := -g -O2 -pipe
-
-BUILD_FOLDER := bin
-KERNEL_FILE := kernel
+# Default user QEMU flags. These are appended to the QEMU command calls.
+QEMUFLAGS := -m 2G
 
 # User controllable C compiler command.
 CC := cc
@@ -55,27 +49,26 @@ LDFLAGS := -Wl,-m,elf_x86_64 \
 	-Wl,--gc-sections \
 	-T linker-x86_64.ld
 
-
 # Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
 # object and header dependency file names.
 override SRCFILES := $(shell cd src && find -L * -type f | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
 override C3FILES := $(filter %.c3,$(SRCFILES))
-override OBJ := $(addprefix $(BUILD_FOLDER)/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o))
-override HEADER_DEPS := $(addprefix $(BUILD_FOLDER)/,$(CFILES:.c=.c.d))
+override OBJ := $(addprefix bin/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o))
+override HEADER_DEPS := $(addprefix bin/,$(CFILES:.c=.c.d))
 
 # Link rules for the final executable.
-$(BUILD_FOLDER)/$(KERNEL_FILE): linker-x86_64.ld $(OBJ)
+bin/kernel: linker-x86_64.ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $@
 
 # Compilation rules for *.c3 files.
-$(BUILD_FOLDER)/%.c3.o: src/%.c3
+bin/%.c3.o: src/%.c3
 	mkdir -p "$$(dirname $@)"
 	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no $< -o $@
 
 # Compilation rules for *.c files.
-$(BUILD_FOLDER)/%.c.o: src/%.c
+bin/%.c.o: src/%.c
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
@@ -122,8 +115,8 @@ limine/limine:
 	rm -rf limine
 	git clone https://github.com/limine-bootloader/limine.git --branch=v9.x-binary --depth=1
 	$(MAKE) -C limine \
-		CC="$(HOST_CC)" \
-		CFLAGS="$(HOST_CFLAGS)"
+		CC="$(CC)" \
+		CFLAGS="-g -O2 -pipe"
 
 $(IMAGE_NAME).iso: limine/limine bin/kernel
 	rm -rf iso_root
