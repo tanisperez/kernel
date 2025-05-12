@@ -1,5 +1,7 @@
 module kernel;
 
+import kernel::types;
+
 fn void halt_and_catch_fire() @export("halt_and_catch_fire")
 {
     asm("hlt");
@@ -10,13 +12,13 @@ struct LimineVideoMode {
     ulong width;
     ulong height;
     ushort bpp;
-    char memory_model;
-    char red_mask_size;
-    char red_mask_shift;
-    char green_mask_size;
-    char green_mask_shift;
-    char blue_mask_size;
-    char blue_mask_shift;
+    UInt8 memory_model;
+    UInt8 red_mask_size;
+    UInt8 red_mask_shift;
+    UInt8 green_mask_size;
+    UInt8 green_mask_shift;
+    UInt8 blue_mask_size;
+    UInt8 blue_mask_shift;
 }
 
 struct LimineFramebuffer {
@@ -25,14 +27,14 @@ struct LimineFramebuffer {
     ulong height;
     ulong pitch;
     ushort bpp;
-    char memory_model;
-    char red_mask_size;
-    char red_mask_shift;
-    char green_mask_size;
-    char green_mask_shift;
-    char blue_mask_size;
-    char blue_mask_shift;
-    char[7] unused;
+    UInt8 memory_model;
+    UInt8 red_mask_size;
+    UInt8 red_mask_shift;
+    UInt8 green_mask_size;
+    UInt8 green_mask_shift;
+    UInt8 blue_mask_size;
+    UInt8 blue_mask_shift;
+    UInt8[7] unused;
     ulong edid_size;
     void * edid;
     /* Response revision 1 */

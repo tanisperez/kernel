@@ -61,19 +61,13 @@ override OBJ := $(addprefix bin/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o))
 override HEADER_DEPS := $(addprefix bin/,$(CFILES:.c=.c.d))
 
 # Link rules for the final executable.
-bin/kernel: linker-x86_64.ld $(OBJ)
-	mkdir -p "$$(dirname $@)"
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $@
-
-# Compilation rules for *.c3 files.
-bin/%.c3.o: src/%.c3
-	mkdir -p "$$(dirname $@)"
-	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no $< -o $@
-
-# Compilation rules for *.c files.
-bin/%.c.o: src/%.c
-	mkdir -p "$$(dirname $@)"
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+bin/kernel: linker-x86_64.ld
+	mkdir -p bin/
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c src/main.c -o bin/main.o
+	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no \
+ 		src/kmain.c3 src/types/types.c3 \
+ 		-o bin/kmain.o
+	$(CC) $(CFLAGS) $(LDFLAGS) bin/main.o bin/kmain.o -o $@
 
 all: $(IMAGE_NAME).iso
 
