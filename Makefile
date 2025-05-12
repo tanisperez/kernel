@@ -14,6 +14,75 @@ override IMAGE_NAME := kernel-$(ARCH)
 HOST_CC := cc
 HOST_CFLAGS := -g -O2 -pipe
 
+BUILD_FOLDER := bin
+KERNEL_FILE := kernel
+
+# User controllable C compiler command.
+CC := cc
+
+# User controllable C flags.
+CFLAGS := -g -O2 -pipe \
+	-Wall \
+	-Wextra \
+	-std=gnu11 \
+	-nostdinc \
+	-ffreestanding \
+	-fno-stack-protector \
+	-fno-stack-check \
+	-fno-PIC \
+	-ffunction-sections \
+	-fdata-sections \
+	-m64 \
+	-march=x86-64 \
+	-mno-80387 \
+	-mno-mmx \
+	-mno-sse \
+	-mno-sse2 \
+	-mno-red-zone \
+	-mcmodel=kernel
+
+# User controllable C preprocessor flags. We set none by default.
+CPPFLAGS := \
+	-I src \
+	-isystem src/freestnd-c-hdrs \
+	$(CPPFLAGS) \
+	-DLIMINE_API_REVISION=3 \
+	-MMD \
+	-MP
+
+# User controllable linker flags. We set none by default.
+LDFLAGS := -Wl,-m,elf_x86_64 \
+	-Wl,--build-id=none \
+	-nostdlib \
+	-static \
+	-z max-page-size=0x1000 \
+	-Wl,--gc-sections \
+	-T linker-x86_64.ld
+
+
+# Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
+# object and header dependency file names.
+override SRCFILES := $(shell cd src && find -L * -type f | LC_ALL=C sort)
+override CFILES := $(filter %.c,$(SRCFILES))
+override C3FILES := $(filter %.c3,$(SRCFILES))
+override OBJ := $(addprefix $(BUILD_FOLDER)/,$(C3FILES:.c3=.c3.o) $(CFILES:.c=.c.o))
+override HEADER_DEPS := $(addprefix $(BUILD_FOLDER)/,$(CFILES:.c=.c.d))
+
+# Link rules for the final executable.
+$(BUILD_FOLDER)/$(KERNEL_FILE): linker-x86_64.ld $(OBJ)
+	mkdir -p "$$(dirname $@)"
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) -o $@
+
+# Compilation rules for *.c3 files.
+$(BUILD_FOLDER)/%.c3.o: src/%.c3
+	mkdir -p "$$(dirname $@)"
+	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no $< -o $@
+
+# Compilation rules for *.c files.
+$(BUILD_FOLDER)/%.c.o: src/%.c
+	mkdir -p "$$(dirname $@)"
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
+
 all: $(IMAGE_NAME).iso
 
 all-hdd: $(IMAGE_NAME).hdd
@@ -60,13 +129,10 @@ limine/limine:
 		CC="$(HOST_CC)" \
 		CFLAGS="$(HOST_CFLAGS)"
 
-kernel:
-	$(MAKE) -C kernel
-
-$(IMAGE_NAME).iso: limine/limine kernel
+$(IMAGE_NAME).iso: limine/limine bin/kernel
 	rm -rf iso_root
 	mkdir -p iso_root/boot
-	cp -v kernel/bin/kernel iso_root/boot/
+	cp -v bin/kernel iso_root/boot/
 	mkdir -p iso_root/boot/limine
 	cp -v limine.conf iso_root/boot/limine/
 	mkdir -p iso_root/EFI/BOOT
@@ -88,16 +154,14 @@ $(IMAGE_NAME).hdd: limine/limine kernel
 	./limine/limine bios-install $(IMAGE_NAME).hdd
 	mformat -i $(IMAGE_NAME).hdd@@1M
 	mmd -i $(IMAGE_NAME).hdd@@1M ::/EFI ::/EFI/BOOT ::/boot ::/boot/limine
-	mcopy -i $(IMAGE_NAME).hdd@@1M kernel/bin/kernel ::/boot
+	mcopy -i $(IMAGE_NAME).hdd@@1M bin/kernel ::/boot
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine.conf ::/boot/limine
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine/limine-bios.sys ::/boot/limine
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine/BOOTX64.EFI ::/EFI/BOOT
 	mcopy -i $(IMAGE_NAME).hdd@@1M limine/BOOTIA32.EFI ::/EFI/BOOT
 
 clean:
-	$(MAKE) -C kernel clean
-	rm -rf iso_root $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
+	rm -rf bin/ iso_root/ $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
 
 distclean:
-	$(MAKE) -C kernel distclean
-	rm -rf iso_root *.iso *.hdd limine ovmf
+	rm -rf bin/ iso_root/ *.iso *.hdd limine ovmf
