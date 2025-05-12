@@ -13,9 +13,6 @@ override IMAGE_NAME := kernel-$(ARCH)
 # Toolchain for building the 'limine' executable for the host.
 HOST_CC := cc
 HOST_CFLAGS := -g -O2 -pipe
-HOST_CPPFLAGS :=
-HOST_LDFLAGS :=
-HOST_LIBS :=
 
 all: $(IMAGE_NAME).iso
 
@@ -61,10 +58,7 @@ limine/limine:
 	git clone https://github.com/limine-bootloader/limine.git --branch=v9.x-binary --depth=1
 	$(MAKE) -C limine \
 		CC="$(HOST_CC)" \
-		CFLAGS="$(HOST_CFLAGS)" \
-		CPPFLAGS="$(HOST_CPPFLAGS)" \
-		LDFLAGS="$(HOST_LDFLAGS)" \
-		LIBS="$(HOST_LIBS)"
+		CFLAGS="$(HOST_CFLAGS)"
 
 kernel:
 	$(MAKE) -C kernel
