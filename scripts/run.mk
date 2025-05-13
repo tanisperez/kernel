@@ -3,6 +3,7 @@ run: ovmf/ovmf-code-x86_64.fd $(IMAGE_NAME).iso
 		-M q35 \
 		-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-x86_64.fd,readonly=on \
 		-cdrom $(IMAGE_NAME).iso \
+		-serial stdio \
 		$(QEMUFLAGS)
 
 run-hdd: ovmf/ovmf-code-x86_64.fd $(IMAGE_NAME).hdd
@@ -10,6 +11,7 @@ run-hdd: ovmf/ovmf-code-x86_64.fd $(IMAGE_NAME).hdd
 		-M q35 \
 		-drive if=pflash,unit=0,format=raw,file=ovmf/ovmf-code-x86_64.fd,readonly=on \
 		-hda $(IMAGE_NAME).hdd \
+		-serial stdio \
 		$(QEMUFLAGS)
 
 run-bios: $(IMAGE_NAME).iso
@@ -24,6 +26,7 @@ run-hdd-bios: $(IMAGE_NAME).hdd
 	qemu-system-x86_64 \
 		-M q35 \
 		-hda $(IMAGE_NAME).hdd \
+		-serial stdio \
 		$(QEMUFLAGS)
 
 $(IMAGE_NAME).iso: limine/limine bin/kernel
