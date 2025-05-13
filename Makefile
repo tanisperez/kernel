@@ -33,7 +33,7 @@ CFLAGS := -g -O2 -pipe \
 
 # User controllable C preprocessor flags. We set none by default.
 CPPFLAGS := \
-	-I src \
+	-I src/include \
 	-isystem src/freestnd-c-hdrs \
 	$(CPPFLAGS) \
 	-DLIMINE_API_REVISION=3 \
@@ -64,11 +64,19 @@ override HEADER_DEPS := $(addprefix bin/,$(CFILES:.c=.c.d))
 bin/kernel: linker-x86_64.ld
 	mkdir -p bin/
 	mkdir -p bin/boot
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c src/boot/limine.c -o bin/boot/limine.o
+	mkdir -p bin/core
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c src/boot/limine.c -o bin/boot/limine.c.o
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c src/core/system.c -o bin/core/system.c.o
 	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no \
- 		src/kmain.c3 src/types/types.c3 \
+ 		src/kmain.c3 \
+ 		src/types/types.c3 \
+ 		src/core/system.c3 \
  		-o bin/kmain.o
-	$(CC) $(CFLAGS) $(LDFLAGS) bin/boot/limine.o bin/kmain.o -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) \
+		bin/boot/limine.c.o \
+		bin/core/system.c.o \
+		bin/kmain.o \
+		-o $@
 
 all: $(IMAGE_NAME).iso
 
