@@ -17,7 +17,7 @@
 #ifndef LIMINE_H
 #define LIMINE_H 1
 
-#include "stdint.h"
+#include <stdint.h>
 
 /* Misc */
 
