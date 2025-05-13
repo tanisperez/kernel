@@ -71,6 +71,7 @@ bin/kernel: linker-x86_64.ld
  		src/kmain.c3 \
  		src/types/types.c3 \
  		src/core/system.c3 \
+ 		src/core/serial.c3 \
  		-o bin/kmain.o
 	$(CC) $(CFLAGS) $(LDFLAGS) \
 		bin/boot/limine.c.o \

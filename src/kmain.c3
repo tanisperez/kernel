@@ -1,6 +1,8 @@
 module kernel;
 
 import kernel::types;
+import kernel::core::system;
+import kernel::core::serial;
 
 struct LimineVideoMode {
     UInt64 pitch;
@@ -79,6 +81,14 @@ fn void kmain() @export("kmain") {
         UInt32 *fb_ptr = framebuffer.address;
         fb_ptr[i * (framebuffer.pitch / 4) + i] = 0xFF0000;
     }
+
+    Serial serial = { SerialPort.COM1 };
+    serial.enable();
+    serial.putchar('T');
+    serial.putchar('a');
+    serial.putchar('n');
+    serial.putchar('i');
+    serial.putchar('s');
 
     // We're done, just hang...
     halt_and_catch_fire();

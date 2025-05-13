@@ -17,6 +17,7 @@ run-bios: $(IMAGE_NAME).iso
 		-M q35 \
 		-cdrom $(IMAGE_NAME).iso \
 		-boot d \
+		-serial stdio \
 		$(QEMUFLAGS)
 
 run-hdd-bios: $(IMAGE_NAME).hdd
