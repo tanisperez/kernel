@@ -17,10 +17,6 @@
 #ifndef LIMINE_H
 #define LIMINE_H 1
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <stdint.h>
 
 /* Misc */
@@ -300,29 +296,10 @@ LIMINE_DEPRECATED_IGNORE_END
 
 #define LIMINE_PAGING_MODE_REQUEST { LIMINE_COMMON_MAGIC, 0x95c1a0edab0944cb, 0xa4e5cb3842f7488a }
 
-#if defined (__x86_64__) || defined (__i386__)
 #define LIMINE_PAGING_MODE_X86_64_4LVL 0
 #define LIMINE_PAGING_MODE_X86_64_5LVL 1
 #define LIMINE_PAGING_MODE_MIN LIMINE_PAGING_MODE_X86_64_4LVL
 #define LIMINE_PAGING_MODE_DEFAULT LIMINE_PAGING_MODE_X86_64_4LVL
-#elif defined (__aarch64__)
-#define LIMINE_PAGING_MODE_AARCH64_4LVL 0
-#define LIMINE_PAGING_MODE_AARCH64_5LVL 1
-#define LIMINE_PAGING_MODE_MIN LIMINE_PAGING_MODE_AARCH64_4LVL
-#define LIMINE_PAGING_MODE_DEFAULT LIMINE_PAGING_MODE_AARCH64_4LVL
-#elif defined (__riscv) && (__riscv_xlen == 64)
-#define LIMINE_PAGING_MODE_RISCV_SV39 0
-#define LIMINE_PAGING_MODE_RISCV_SV48 1
-#define LIMINE_PAGING_MODE_RISCV_SV57 2
-#define LIMINE_PAGING_MODE_MIN LIMINE_PAGING_MODE_RISCV_SV39
-#define LIMINE_PAGING_MODE_DEFAULT LIMINE_PAGING_MODE_RISCV_SV48
-#elif defined (__loongarch__) && (__loongarch_grlen == 64)
-#define LIMINE_PAGING_MODE_LOONGARCH64_4LVL 0
-#define LIMINE_PAGING_MODE_MIN LIMINE_PAGING_MODE_LOONGARCH64_4LVL
-#define LIMINE_PAGING_MODE_DEFAULT LIMINE_PAGING_MODE_LOONGARCH64_4LVL
-#else
-#error Unknown architecture
-#endif
 
 struct limine_paging_mode_response {
     uint64_t revision;
@@ -370,8 +347,6 @@ struct LIMINE_MP(info);
 
 typedef void (*limine_goto_address)(struct LIMINE_MP(info) *);
 
-#if defined (__x86_64__) || defined (__i386__)
-
 #if LIMINE_API_REVISION >= 1
 #  define LIMINE_MP_X2APIC (1 << 0)
 #else
@@ -393,58 +368,6 @@ struct LIMINE_MP(response) {
     uint64_t cpu_count;
     LIMINE_PTR(struct LIMINE_MP(info) **) cpus;
 };
-
-#elif defined (__aarch64__)
-
-struct LIMINE_MP(info) {
-    uint32_t processor_id;
-    uint32_t reserved1;
-    uint64_t mpidr;
-    uint64_t reserved;
-    LIMINE_PTR(limine_goto_address) goto_address;
-    uint64_t extra_argument;
-};
-
-struct LIMINE_MP(response) {
-    uint64_t revision;
-    uint64_t flags;
-    uint64_t bsp_mpidr;
-    uint64_t cpu_count;
-    LIMINE_PTR(struct LIMINE_MP(info) **) cpus;
-};
-
-#elif defined (__riscv) && (__riscv_xlen == 64)
-
-struct LIMINE_MP(info) {
-    uint64_t processor_id;
-    uint64_t hartid;
-    uint64_t reserved;
-    LIMINE_PTR(limine_goto_address) goto_address;
-    uint64_t extra_argument;
-};
-
-struct LIMINE_MP(response) {
-    uint64_t revision;
-    uint64_t flags;
-    uint64_t bsp_hartid;
-    uint64_t cpu_count;
-    LIMINE_PTR(struct LIMINE_MP(info) **) cpus;
-};
-
-#elif defined (__loongarch__) && (__loongarch_grlen == 64)
-
-struct LIMINE_MP(info) {
-    uint64_t reserved;
-};
-
-struct LIMINE_MP(response) {
-    uint64_t cpu_count;
-    LIMINE_PTR(struct LIMINE_MP(info) **) cpus;
-};
-
-#else
-#error Unknown architecture
-#endif
 
 struct LIMINE_MP(request) {
     uint64_t id[4];
@@ -731,24 +654,5 @@ struct limine_dtb_request {
     uint64_t revision;
     LIMINE_PTR(struct limine_dtb_response *) response;
 };
-
-/* RISC-V Boot Hart ID */
-
-#define LIMINE_RISCV_BSP_HARTID_REQUEST { LIMINE_COMMON_MAGIC, 0x1369359f025525f9, 0x2ff2a56178391bb6 }
-
-struct limine_riscv_bsp_hartid_response {
-    uint64_t revision;
-    uint64_t bsp_hartid;
-};
-
-struct limine_riscv_bsp_hartid_request {
-    uint64_t id[4];
-    uint64_t revision;
-    LIMINE_PTR(struct limine_riscv_bsp_hartid_response *) response;
-};
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif
