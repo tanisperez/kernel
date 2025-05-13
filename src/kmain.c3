@@ -76,8 +76,8 @@ fn void kmain() @export("kmain") {
 
     // Note: we assume the framebuffer model is RGB with 32-bit pixels.
     for (int i = 0; i < 100; i++) {
-        uint *fb_ptr = (uint *) framebuffer.address;
-        fb_ptr[i * ((ulong)framebuffer.pitch / 4) + i] = 0xFF0000;
+        UInt32 *fb_ptr = framebuffer.address;
+        fb_ptr[i * (framebuffer.pitch / 4) + i] = 0xFF0000;
     }
 
     // We're done, just hang...

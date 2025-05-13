@@ -1,15 +1,15 @@
 module kernel::types;
 
-typedef Int8 = ichar;
-typedef UInt8 = char;
-typedef Int16 = short;
-typedef UInt16 = ushort;
-typedef Int32 = int;
-typedef UInt32 = uint;
-typedef Int64 = long;
-typedef UInt64 = ulong;
-typedef Int128 = int128;
-typedef UInt128 = uint128;
+alias Int8 = ichar;
+alias UInt8 = char;
+alias Int16 = short;
+alias UInt16 = ushort;
+alias Int32 = int;
+alias UInt32 = uint;
+alias Int64 = long;
+alias UInt64 = ulong;
+alias Int128 = int128;
+alias UInt128 = uint128;
 
 fn void foo() @export("foo")
 {
