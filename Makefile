@@ -63,11 +63,12 @@ override HEADER_DEPS := $(addprefix bin/,$(CFILES:.c=.c.d))
 # Link rules for the final executable.
 bin/kernel: linker-x86_64.ld
 	mkdir -p bin/
-	$(CC) $(CFLAGS) $(CPPFLAGS) -c src/main.c -o bin/main.o
+	mkdir -p bin/boot
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c src/boot/limine.c -o bin/boot/limine.o
 	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no \
  		src/kmain.c3 src/types/types.c3 \
  		-o bin/kmain.o
-	$(CC) $(CFLAGS) $(LDFLAGS) bin/main.o bin/kmain.o -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) bin/boot/limine.o bin/kmain.o -o $@
 
 all: $(IMAGE_NAME).iso
 
