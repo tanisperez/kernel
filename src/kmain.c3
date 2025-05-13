@@ -60,10 +60,6 @@ fn void halt_and_catch_fire() {
     asm("hlt");
 }
 
-// TODO:
-// ***********************************************
-// Estraer las variables del código C apuntando a la dirección de memoria correspondiente
-
 fn void kmain() @export("kmain") {
     // Ensure the bootloader actually understands our base revision (see spec).
     if (is_limine_base_revision_not_supported()) {
