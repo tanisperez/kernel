@@ -2,11 +2,6 @@ module kernel;
 
 import kernel::types;
 
-fn void halt_and_catch_fire() @export("halt_and_catch_fire")
-{
-    asm("hlt");
-}
-
 struct LimineVideoMode {
     UInt64 pitch;
     UInt64 width;
@@ -57,9 +52,12 @@ struct LimineFramebufferRequest {
 extern UInt64[3] limine_base_revision;
 extern LimineFramebufferRequest framebuffer_request;
 
-fn bool is_limine_base_revision_not_supported()
-{
+fn bool is_limine_base_revision_not_supported() {
     return limine_base_revision[2] != 0;
+}
+
+fn void halt_and_catch_fire() {
+    asm("hlt");
 }
 
 // TODO:
