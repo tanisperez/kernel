@@ -13,35 +13,31 @@ enum SerialPort: UInt16 (inline UInt16 address) {
 }
 
 struct Serial {
-    SerialPort serial_port;
+    SerialPort port;
 }
 
 fn void Serial.enable(self) {
-    system::outb(self.serial_port + 1, 0x00);    // Disable all interrupts
-    system::outb(self.serial_port + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-    system::outb(self.serial_port + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-    system::outb(self.serial_port + 1, 0x00);    //                  (hi byte)
-    system::outb(self.serial_port + 3, 0x03);    // 8 bits, no parity, one stop bit
-    system::outb(self.serial_port + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-    system::outb(self.serial_port + 4, 0x0B);    // IRQs enabled, RTS/DSR set
-
-    system::outb(self.serial_port + 1, 0x01);
+    system::outb(self.port + 1, 0x00);    // Disable all interrupts
+    system::outb(self.port + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+    system::outb(self.port + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+    system::outb(self.port + 1, 0x00);    //                  (hi byte)
+    system::outb(self.port + 3, 0x03);    // 8 bits, no parity, one stop bit
+    system::outb(self.port + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+    system::outb(self.port + 4, 0x0B);    // IRQs enabled, RTS/DSR set
 }
 
 fn int Serial.is_write_empty(self) @private {
-    return (system::inb(self.serial_port + 5) & 0x20);
+    return system::inb(self.port + 5) & 0x20;
 }
 
-fn bool Serial.is_read_empty(self) @private {
-    UInt8 data = system::inb(self.serial_port + 5);
-    return (data & 1) == 0;
+fn int Serial.is_read_empty(self) @private {
+    return system::inb(self.port + 5) & 1;
 }
 
 fn void Serial.write_char(self, char character) {
-    //while (self.is_write_empty() == 0) {
-    //
-    //}
-    system::outb(self.serial_port, character);
+    // while (self.is_write_empty() == 0);
+
+    system::outb(self.port, character);
 }
 
 fn void Serial.writeln(self, String text) {
@@ -49,4 +45,10 @@ fn void Serial.writeln(self, String text) {
         self.write_char(c);
     }
     self.write_char('\n');
+}
+
+fn char Serial.read_char(self) {
+    // while (self.is_read_empty() == 0);
+
+    return (char) system::inb(self.port);
 }
