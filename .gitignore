@@ -4,3 +4,4 @@ bin/
 .idea/
 limine/
 ovmf/
+testrun

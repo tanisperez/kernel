@@ -83,6 +83,10 @@ all: $(IMAGE_NAME).iso
 
 all-hdd: $(IMAGE_NAME).hdd
 
+.PHONY: test
+test:
+	c3c compile-test test/types/types.c3
+
 clean:
 	rm -rf bin/ iso_root/ $(IMAGE_NAME).iso $(IMAGE_NAME).hdd
 
