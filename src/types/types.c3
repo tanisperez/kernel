@@ -11,6 +11,8 @@ alias UInt64 = ulong;
 alias Int128 = int128;
 alias UInt128 = uint128;
 
+typedef String = inline char[];
+
 fn void foo() @export("foo")
 {
     UInt8 i = 5;
