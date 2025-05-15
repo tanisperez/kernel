@@ -28,6 +28,25 @@ fn void Serial.enable(self) {
     system::outb(self.serial_port + 1, 0x01);
 }
 
-fn void Serial.putchar(self, char character) {
+fn int Serial.is_write_empty(self) @private {
+    return (system::inb(self.serial_port + 5) & 0x20);
+}
+
+fn bool Serial.is_read_empty(self) @private {
+    UInt8 data = system::inb(self.serial_port + 5);
+    return (data & 1) == 0;
+}
+
+fn void Serial.write_char(self, char character) {
+    //while (self.is_write_empty() == 0) {
+    //
+    //}
     system::outb(self.serial_port, character);
+}
+
+fn void Serial.writeln(self, String text) {
+    foreach (char c : text) {
+        self.write_char(c);
+    }
+    self.write_char('\n');
 }

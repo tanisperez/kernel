@@ -84,11 +84,8 @@ fn void kmain() @export("kmain") {
 
     Serial serial = { SerialPort.COM1 };
     serial.enable();
-    serial.putchar('T');
-    serial.putchar('a');
-    serial.putchar('n');
-    serial.putchar('i');
-    serial.putchar('s');
+    serial.writeln("[Serial] COM1 port is ready");
+    serial.writeln("Kernel up and running!");
 
     // We're done, just hang...
     halt_and_catch_fire();
