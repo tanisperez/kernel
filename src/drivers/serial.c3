@@ -17,27 +17,27 @@ struct Serial {
 }
 
 fn void Serial.enable(self) {
-    system::outb(self.port + 1, 0x00);    // Disable all interrupts
-    system::outb(self.port + 3, 0x80);    // Enable DLAB (set baud rate divisor)
-    system::outb(self.port + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
-    system::outb(self.port + 1, 0x00);    //                  (hi byte)
-    system::outb(self.port + 3, 0x03);    // 8 bits, no parity, one stop bit
-    system::outb(self.port + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
-    system::outb(self.port + 4, 0x0B);    // IRQs enabled, RTS/DSR set
+    cpu::outb(self.port + 1, 0x00);    // Disable all interrupts
+    cpu::outb(self.port + 3, 0x80);    // Enable DLAB (set baud rate divisor)
+    cpu::outb(self.port + 0, 0x03);    // Set divisor to 3 (lo byte) 38400 baud
+    cpu::outb(self.port + 1, 0x00);    //                  (hi byte)
+    cpu::outb(self.port + 3, 0x03);    // 8 bits, no parity, one stop bit
+    cpu::outb(self.port + 2, 0xC7);    // Enable FIFO, clear them, with 14-byte threshold
+    cpu::outb(self.port + 4, 0x0B);    // IRQs enabled, RTS/DSR set
 }
 
 fn int Serial.is_write_empty(self) @private {
-    return system::inb(self.port + 5) & 0x20;
+    return cpu::inb(self.port + 5) & 0x20;
 }
 
 fn int Serial.is_read_empty(self) @private {
-    return system::inb(self.port + 5) & 1;
+    return cpu::inb(self.port + 5) & 1;
 }
 
 fn void Serial.write_char(self, char character) {
     // while (self.is_write_empty() == 0);
 
-    system::outb(self.port, character);
+    cpu::outb(self.port, character);
 }
 
 fn void Serial.writeln(self, String text) {
@@ -50,5 +50,5 @@ fn void Serial.writeln(self, String text) {
 fn char Serial.read_char(self) {
     // while (self.is_read_empty() == 0);
 
-    return (char) system::inb(self.port);
+    return (char) cpu::inb(self.port);
 }
