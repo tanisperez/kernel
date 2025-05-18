@@ -73,6 +73,7 @@ bin/kernel: linker-x86_64.ld
  		src/boot/limine.c3 \
  		src/cpu/system.c3 \
  		src/drivers/serial.c3 \
+ 		src/drivers/frame_buffer.c3 \
  		-o bin/kmain.o
 	$(CC) $(CFLAGS) $(LDFLAGS) \
 		bin/boot/limine.c.o \
