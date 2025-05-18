@@ -70,6 +70,7 @@ bin/kernel: linker-x86_64.ld
 	c3c compile-only --single-module=yes --link-libc=no --use-stdlib=no --emit-stdlib=no \
  		src/kmain.c3 \
  		src/types/types.c3 \
+ 		src/boot/limine.c3 \
  		src/cpu/system.c3 \
  		src/drivers/serial.c3 \
  		-o bin/kmain.o
