@@ -2,7 +2,7 @@ module kernel;
 
 import kernel::types;
 import kernel::cpu;
-import kernel::core::serial;
+import kernel::drivers;
 
 struct LimineVideoMode {
     UInt64 pitch;

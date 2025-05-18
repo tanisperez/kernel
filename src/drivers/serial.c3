@@ -1,4 +1,4 @@
-module kernel::core::serial;
+module kernel::drivers;
 
 import kernel::types;
 import kernel::cpu;
