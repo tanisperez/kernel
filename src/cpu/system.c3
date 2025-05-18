@@ -1,4 +1,4 @@
-module kernel::core::system;
+module kernel::cpu;
 
 import kernel::types;
 

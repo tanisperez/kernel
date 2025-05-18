@@ -1,7 +1,7 @@
 module kernel;
 
 import kernel::types;
-import kernel::core::system;
+import kernel::cpu;
 import kernel::core::serial;
 
 struct LimineVideoMode {

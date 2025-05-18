@@ -1,7 +1,7 @@
 module kernel::core::serial;
 
 import kernel::types;
-import kernel::core::system;
+import kernel::cpu;
 
 // Documentation: https://wiki.osdev.org/Serial_Ports
 
