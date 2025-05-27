@@ -16,6 +16,8 @@ fn void kmain() @export("kmain") {
         fb_ptr[i * (framebuffer.pitch / 4) + i] = 0xFF0000;
     }
 
+    cpu::init_gdt();
+
     Serial serial = { SerialPort.COM1 };
     serial.enable();
     serial.writeln("[Serial] COM1 port is ready");
