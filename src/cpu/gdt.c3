@@ -2,6 +2,53 @@ module kernel::cpu;
 
 import kernel::types;
 
+/*
+ * Global Descriptor Table (GDT) Setup for x86_64 Long Mode
+ *
+ * The Global Descriptor Table (GDT) is a data structure used by x86 CPUs to define
+ * the characteristics of the various memory areas (segments) used during program
+ * execution. These characteristics include the base address, size (limit), access
+ * privileges, and type of segment.
+ *
+ * In 64-bit long mode, segmentation is mostly unused and flat memory model is assumed,
+ * but the GDT is still required for:
+ *   - Defining code and data segments with correct access bits.
+ *   - Defining a Task State Segment (TSS) for kernel context switching.
+ *
+ * GDT Entry Format (64-bit mode):
+ *
+ * 63              56 55      52 51      48 47              40 39               32
+ * +----------------+----------+----------+------------------+-------------------+
+ * | Base 31:24     | Flags    | Limit19:16| Access Byte      | Base 23:16        |
+ * +----------------+----------+----------+------------------+-------------------+
+ * 31                             16 15                              0
+ * +--------------------------------+--------------------------------+
+ * | Base 15:0                      | Segment Limit 15:0             |
+ * +--------------------------------+--------------------------------+
+ *
+ * Segment selectors (offsets into the GDT):
+ *   0x00 - Null segment
+ *   0x08 - Kernel Code segment
+ *   0x10 - Kernel Data segment
+ *   0x18 - User Code segment
+ *   0x20 - User Data segment
+ *   0x28 - TSS (Task State Segment)
+ *
+ * ASCII diagram of segment layout in GDT:
+ *
+ *  GDT Layout:
+ *
+ *  Index | Selector | Description
+ *  ------+----------+------------------------
+ *   0    | 0x00     | Null Segment
+ *   1    | 0x08     | Kernel Code Segment
+ *   2    | 0x10     | Kernel Data Segment
+ *   3    | 0x18     | User Code Segment
+ *   4    | 0x20     | User Data Segment
+ *   5    | 0x28     | Task State Segment (TSS)
+ *
+ */
+
 const UInt8 GDT_ENTRIES = 5;
 
 enum GDTSegment: UInt8 (inline UInt8 address) {
