@@ -4,7 +4,7 @@ import kernel::types;
 
 // Access Byte Flags (for segment and system descriptors)
 // ----------------------------------------------------------------------------
-// | Bit | Nombre         | Significado                                        |
+// | Bit | Name           | Usage                                              |
 // | --- | -------------- | -------------------------------------------------- |
 // | 7   | P (Present)    | Segment is present in memory                       |
 // | 6–5 | DPL            | Descriptor Privilege Level (Ring 0–3)              |
@@ -14,17 +14,16 @@ import kernel::types;
 // | 1   | RW             | Writable (data) / Readable (code)                  |
 // | 0   | A (Accessed)   | Set by CPU when the segment is accessed            |
 // ----------------------------------------------------------------------------
-const UInt8 ACCESS_ACCESSED     = 1 << 0; // Bit 0: Accessed (set by CPU when used)
-const UInt8 ACCESS_RW           = 1 << 1; // Bit 1: Readable (code) / Writable (data)
-const UInt8 ACCESS_DIRECTION    = 1 << 2; // Bit 2: Direction (data) / Conforming (code) — usually 0 in long mode
-const UInt8 ACCESS_EXECUTABLE   = 1 << 3; // Bit 3: 1 = Code segment, 0 = Data segment
-const UInt8 ACCESS_SEGMENT      = 1 << 4; // Bit 4: 1 = Code/Data segment, 0 = System descriptor
-// Descriptor Privilege Level (DPL), bits [6:5]
-const UInt8 ACCESS_PRIV_RING0   = 0 << 5; // Ring 0 (highest privilege)
-const UInt8 ACCESS_PRIV_RING1   = 1 << 5; // Ring 1
-const UInt8 ACCESS_PRIV_RING2   = 2 << 5; // Ring 2
-const UInt8 ACCESS_PRIV_RING3   = 3 << 5; // Ring 3 (user mode)
-const UInt8 ACCESS_PRESENT      = 1 << 7; // Bit 7: Segment present in memory
+const UInt8 ACCESS_ACCESSED     = 0b00000001; // Bit 0: Accessed
+const UInt8 ACCESS_RW           = 0b00000010; // Bit 1: Readable (code) / Writable (data)
+const UInt8 ACCESS_DIRECTION    = 0b00000100; // Bit 2: Direction (data) / Conforming (code)
+const UInt8 ACCESS_EXECUTABLE   = 0b00001000; // Bit 3: 1 = Code, 0 = Data
+const UInt8 ACCESS_SEGMENT      = 0b00010000; // Bit 4: 1 = Code/Data, 0 = System
+const UInt8 ACCESS_PRIV_RING0   = 0b00000000; // Bits 5–6: DPL = 0
+const UInt8 ACCESS_PRIV_RING1   = 0b00100000; // DPL = 1
+const UInt8 ACCESS_PRIV_RING2   = 0b01000000; // DPL = 2
+const UInt8 ACCESS_PRIV_RING3   = 0b01100000; // DPL = 3
+const UInt8 ACCESS_PRESENT      = 0b10000000; // Bit 7: Present
 
 // ACCESS_TSS = 0x89 (10001001)
 const UInt8 ACCESS_TSS          = ACCESS_PRESENT
@@ -32,11 +31,20 @@ const UInt8 ACCESS_TSS          = ACCESS_PRESENT
                                 | ACCESS_ACCESSED
                                 | 0x08; // Type 1000 (TSS Available)
 
-// Granularity byte
-const UInt8 GRANULARITY_4K     = 1 << 7;
-const UInt8 GRANULARITY_32BIT  = 1 << 6; // Ignored in long mode
-const UInt8 GRANULARITY_LONG   = 1 << 5; // Bit L: Long mode (64 bits)
-const UInt8 GRANULARITY_AVL    = 1 << 4;
+// Granularity Byte (Flags) – Bits 0–7
+// -------------------------------------------------------------------------------------------------------------------------
+// | Bit | Name          | Usage                                                                                            |
+// | --- | ------------- | ------------------------------------------------------------------------------------------------ |
+// | 7   | G             | Granularity: 0 = byte granularity, 1 = 4 KiB granularity (limit \* 4K)                           |
+// | 6   | D/B           | **Size bit**: 1 = 32-bit segment (in protected mode) / 0 = 16-bit segment (ignored in long mode) |
+// | 5   | L             | **Long mode**: 1 = 64-bit code segment (only for code)                                           |
+// | 4   | AVL           | **Available for software use**                                                                   |
+// | 3–0 | Limit\[19:16] | High 4 bits of the segment limit (complementa los 16 bits del campo `limit`)                     |
+// -------------------------------------------------------------------------------------------------------------------------
+const UInt8 GRANULARITY_AVL     = 0b00010000; // Bit 4: Software use
+const UInt8 GRANULARITY_LONG    = 0b00100000; // Bit 5: Long mode (64-bit)
+const UInt8 GRANULARITY_32BIT   = 0b01000000; // Bit 6: 32-bit segment (protected mode)
+const UInt8 GRANULARITY_4K      = 0b10000000; // Bit 7: 4 KiB granularity
 
 struct GDTEntry @packed {
     UInt16 limit;
