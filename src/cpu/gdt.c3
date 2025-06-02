@@ -2,6 +2,16 @@ module kernel::cpu;
 
 import kernel::types;
 
+const UInt8 GDT_ENTRIES = 5;
+
+enum GDTSegment: UInt8 (inline UInt8 address) {
+    NULL = 0,
+    KERNEL_CODE = 1,
+    KERNEL_DATA = 2,
+    USER_CODE = 3,
+    USER_DATA = 4
+}
+
 // Access Byte Flags (for segment and system descriptors)
 // ----------------------------------------------------------------------------
 // | Bit | Name           | Usage                                              |
@@ -89,7 +99,7 @@ struct TSSPtr @packed {
 }
 
 struct GDTEntries @packed {
-    GDTEntry[5] descriptors;
+    GDTEntry[GDT_ENTRIES] descriptors;
     TSSEntry tss;
 }
 
@@ -104,47 +114,57 @@ TSSPtr tss;
 
 fn void init_gdt() {
     // Null descriptor
-    gdt.descriptors[0].limit = 0;
-    gdt.descriptors[0].base_low = 0;
-    gdt.descriptors[0].base_middle = 0;
-    gdt.descriptors[0].access = 0;
-    gdt.descriptors[0].granularity = 0;
-    gdt.descriptors[0].base_high = 0;
+    gdt.descriptors[GDTSegment.NULL] = {
+        .limit = 0,
+        .base_low = 0,
+        .base_middle = 0,
+        .access = 0,
+        .granularity = 0,
+        .base_high = 0,
+    };
 
     // Kernel Code Segment
-    gdt.descriptors[1].limit = 0x0000;  // Ignored in long mode
-    gdt.descriptors[1].base_low = 0;    // Ignored in long mode
-    gdt.descriptors[1].base_middle = 0; // Ignored in long mode
-    gdt.descriptors[1].access = ACCESS_PRESENT | ACCESS_PRIV_RING0 | ACCESS_SEGMENT | ACCESS_EXECUTABLE | ACCESS_RW;
-    gdt.descriptors[1].granularity = GRANULARITY_4K | GRANULARITY_LONG;
-    gdt.descriptors[1].base_high = 0;   // Ignored in long mode
+    gdt.descriptors[GDTSegment.KERNEL_CODE] = {
+        .limit        = 0x0000, // Ignored in long mode
+        .base_low     = 0,      // Ignored in long mode
+        .base_middle  = 0,      // Ignored in long mode
+        .access       = ACCESS_PRESENT | ACCESS_PRIV_RING0 | ACCESS_SEGMENT | ACCESS_EXECUTABLE | ACCESS_RW,
+        .granularity  = GRANULARITY_4K | GRANULARITY_LONG,
+        .base_high    = 0,      // Ignored in long mode
+    };
 
     // Kernel Data Segment
-    gdt.descriptors[2].limit = 0x0000;  // Ignored in long mode
-    gdt.descriptors[2].base_low = 0;    // Ignored in long mode
-    gdt.descriptors[2].base_middle = 0; // Ignored in long mode
-    gdt.descriptors[2].access = ACCESS_PRESENT | ACCESS_PRIV_RING0 | ACCESS_SEGMENT | ACCESS_RW;
-    gdt.descriptors[2].granularity = GRANULARITY_4K;
-    gdt.descriptors[2].base_high = 0;   // Ignored in long mode
+    gdt.descriptors[GDTSegment.KERNEL_DATA] = {
+        .limit        = 0x0000, // Ignored in long mode
+        .base_low     = 0,      // Ignored in long mode
+        .base_middle  = 0,      // Ignored in long mode
+        .access       = ACCESS_PRESENT | ACCESS_PRIV_RING0 | ACCESS_SEGMENT | ACCESS_RW,
+        .granularity  = GRANULARITY_4K,
+        .base_high    = 0,      // Ignored in long mode
+    };
 
     // User Code Segment
-    gdt.descriptors[3].limit = 0x0000;  // Ignored in long mode
-    gdt.descriptors[3].base_low = 0;    // Ignored in long mode
-    gdt.descriptors[3].base_middle = 0; // Ignored in long mode
-    gdt.descriptors[3].access = ACCESS_PRESENT | ACCESS_PRIV_RING3 | ACCESS_SEGMENT | ACCESS_EXECUTABLE | ACCESS_RW;
-    gdt.descriptors[3].granularity = GRANULARITY_4K | GRANULARITY_LONG;
-    gdt.descriptors[3].base_high = 0;   // Ignored in long mode
+    gdt.descriptors[GDTSegment.USER_CODE] = {
+        .limit        = 0x0000, // Ignored in long mode
+        .base_low     = 0,      // Ignored in long mode
+        .base_middle  = 0,      // Ignored in long mode
+        .access       = ACCESS_PRESENT | ACCESS_PRIV_RING3 | ACCESS_SEGMENT | ACCESS_EXECUTABLE | ACCESS_RW,
+        .granularity  = GRANULARITY_4K | GRANULARITY_LONG,
+        .base_high    = 0,      // Ignored in long mode
+    };
 
     // User Data Segment
-    gdt.descriptors[4].limit = 0x0000;  // Ignored in long mode
-    gdt.descriptors[4].base_low = 0;    // Ignored in long mode
-    gdt.descriptors[4].base_middle = 0; // Ignored in long mode
-    gdt.descriptors[4].access = ACCESS_PRESENT | ACCESS_PRIV_RING3 | ACCESS_SEGMENT | ACCESS_RW;
-    gdt.descriptors[4].granularity = GRANULARITY_4K;
-    gdt.descriptors[4].base_high = 0;   // Ignored in long mode
+    gdt.descriptors[GDTSegment.USER_DATA] = {
+        .limit        = 0x0000, // Ignored in long mode
+        .base_low     = 0,      // Ignored in long mode
+        .base_middle  = 0,      // Ignored in long mode
+        .access       = ACCESS_PRESENT | ACCESS_PRIV_RING3 | ACCESS_SEGMENT | ACCESS_RW,
+        .granularity  = GRANULARITY_4K,
+        .base_high    = 0,      // Ignored in long mode
+    };
 
     // Task State Segment
-    UInt64 tss_base = (UInt64)&tss;
+    UInt64 tss_base = (UInt64) &tss;
     gdt.tss.length = TSSPtr.sizeof - 1;
     gdt.tss.base_low = (UInt16)(tss_base & 0xFFFF);
     gdt.tss.base_middle = (UInt8)((tss_base >> 16) & 0xFF);
@@ -163,5 +183,5 @@ fn void init_gdt() {
     // Load the GDT
     gdt_reload(&gdtr);
     // Load the TSS
-    gdt_load_tss(0x28); // 0x28 = TSS selector (5 entries * 8 bytes)
+    gdt_load_tss(GDT_ENTRIES * UInt64.sizeof); // 0x28 = TSS selector (5 entries * 8 bytes)
 }
