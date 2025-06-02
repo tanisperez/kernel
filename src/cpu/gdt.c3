@@ -2,13 +2,6 @@ module kernel::cpu;
 
 import kernel::types;
 
-const int NUM_GDT_ENTRIES = 7;
-const int GDT_KERNEL_CODE = 40;
-const int GDT_KERNEL_DATA = 48;
-const int GDT_USER_CODE = 80;
-const int GDT_USER_DATA = 72;
-const int GDT_TSS = 80;
-
 // Access byte
 const UInt8 ACCESS_PRESENT     = 1 << 7;
 const UInt8 ACCESS_PRIV_RING0  = 0 << 5;
@@ -91,36 +84,36 @@ fn void init_gdt() {
     gdt.descriptors[0].base_high = 0;
 
     // Kernel Code Segment
-    gdt.descriptors[1].limit = 0x0000; // Ignored in long mode
-    gdt.descriptors[1].base_low = 0;
-    gdt.descriptors[1].base_middle = 0;
+    gdt.descriptors[1].limit = 0x0000;  // Ignored in long mode
+    gdt.descriptors[1].base_low = 0;    // Ignored in long mode
+    gdt.descriptors[1].base_middle = 0; // Ignored in long mode
     gdt.descriptors[1].access = ACCESS_PRESENT | ACCESS_PRIV_RING0 | ACCESS_SEGMENT | ACCESS_EXECUTABLE | ACCESS_RW;
-    gdt.descriptors[1].granularity = GRANULARITY_LONG;
-    gdt.descriptors[1].base_high = 0;
+    gdt.descriptors[1].granularity = GRANULARITY_4K | GRANULARITY_LONG;
+    gdt.descriptors[1].base_high = 0;   // Ignored in long mode
 
     // Kernel Data Segment
-    gdt.descriptors[2].limit = 0x0000;
-    gdt.descriptors[2].base_low = 0;
-    gdt.descriptors[2].base_middle = 0;
+    gdt.descriptors[2].limit = 0x0000;  // Ignored in long mode
+    gdt.descriptors[2].base_low = 0;    // Ignored in long mode
+    gdt.descriptors[2].base_middle = 0; // Ignored in long mode
     gdt.descriptors[2].access = ACCESS_PRESENT | ACCESS_PRIV_RING0 | ACCESS_SEGMENT | ACCESS_RW;
-    gdt.descriptors[2].granularity = 0;
-    gdt.descriptors[2].base_high = 0;
+    gdt.descriptors[2].granularity = GRANULARITY_4K;
+    gdt.descriptors[2].base_high = 0;   // Ignored in long mode
 
     // User Code Segment
-    gdt.descriptors[3].limit = 0x0000;
-    gdt.descriptors[3].base_low = 0;
-    gdt.descriptors[3].base_middle = 0;
+    gdt.descriptors[3].limit = 0x0000;  // Ignored in long mode
+    gdt.descriptors[3].base_low = 0;    // Ignored in long mode
+    gdt.descriptors[3].base_middle = 0; // Ignored in long mode
     gdt.descriptors[3].access = ACCESS_PRESENT | ACCESS_PRIV_RING3 | ACCESS_SEGMENT | ACCESS_EXECUTABLE | ACCESS_RW;
-    gdt.descriptors[3].granularity = GRANULARITY_LONG;
-    gdt.descriptors[3].base_high = 0;
+    gdt.descriptors[3].granularity = GRANULARITY_4K | GRANULARITY_LONG;
+    gdt.descriptors[3].base_high = 0;   // Ignored in long mode
 
     // User Data Segment
-    gdt.descriptors[4].limit = 0x0000;
-    gdt.descriptors[4].base_low = 0;
-    gdt.descriptors[4].base_middle = 0;
+    gdt.descriptors[4].limit = 0x0000;  // Ignored in long mode
+    gdt.descriptors[4].base_low = 0;    // Ignored in long mode
+    gdt.descriptors[4].base_middle = 0; // Ignored in long mode
     gdt.descriptors[4].access = ACCESS_PRESENT | ACCESS_PRIV_RING3 | ACCESS_SEGMENT | ACCESS_RW;
-    gdt.descriptors[4].granularity = 0;
-    gdt.descriptors[4].base_high = 0;
+    gdt.descriptors[4].granularity = GRANULARITY_4K;
+    gdt.descriptors[4].base_high = 0;   // Ignored in long mode
 
     // Task State Segment
     UInt64 tss_base = (UInt64)&tss;
@@ -137,9 +130,6 @@ fn void init_gdt() {
     gdtr.limit = GDTEntries.sizeof - 1;
     gdtr.base = (UInt64)&gdt;
 
-    // Clean up the TSS (for security)
-    // FIXME: I think it's not necessary in C3...
-    //TODO: memset(&tss, 0, sizeof(TSSPtr));
     tss.iopb = TSSPtr.sizeof;
 
     // Load the GDT
