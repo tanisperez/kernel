@@ -2,15 +2,35 @@ module kernel::cpu;
 
 import kernel::types;
 
-// Access byte
-const UInt8 ACCESS_PRESENT     = 1 << 7;
-const UInt8 ACCESS_PRIV_RING0  = 0 << 5;
-const UInt8 ACCESS_PRIV_RING3  = 3 << 5;
-const UInt8 ACCESS_SEGMENT     = 1 << 4;
-const UInt8 ACCESS_EXECUTABLE  = 1 << 3;
-const UInt8 ACCESS_RW          = 1 << 1;
-const UInt8 ACCESS_ACCESSED    = 1 << 0;
-const UInt8 ACCESS_TSS         = 0b10001001;
+// Access Byte Flags (for segment and system descriptors)
+// ----------------------------------------------------------------------------
+// | Bit | Nombre         | Significado                                        |
+// | --- | -------------- | -------------------------------------------------- |
+// | 7   | P (Present)    | Segment is present in memory                       |
+// | 6–5 | DPL            | Descriptor Privilege Level (Ring 0–3)              |
+// | 4   | S (Descriptor) | 1 = Code/Data, 0 = System segment (e.g., TSS, LDT) |
+// | 3   | E (Executable) | 1 = Code, 0 = Data                                 |
+// | 2   | DC             | Direction (data) / Conforming (code)               |
+// | 1   | RW             | Writable (data) / Readable (code)                  |
+// | 0   | A (Accessed)   | Set by CPU when the segment is accessed            |
+// ----------------------------------------------------------------------------
+const UInt8 ACCESS_ACCESSED     = 1 << 0; // Bit 0: Accessed (set by CPU when used)
+const UInt8 ACCESS_RW           = 1 << 1; // Bit 1: Readable (code) / Writable (data)
+const UInt8 ACCESS_DIRECTION    = 1 << 2; // Bit 2: Direction (data) / Conforming (code) — usually 0 in long mode
+const UInt8 ACCESS_EXECUTABLE   = 1 << 3; // Bit 3: 1 = Code segment, 0 = Data segment
+const UInt8 ACCESS_SEGMENT      = 1 << 4; // Bit 4: 1 = Code/Data segment, 0 = System descriptor
+// Descriptor Privilege Level (DPL), bits [6:5]
+const UInt8 ACCESS_PRIV_RING0   = 0 << 5; // Ring 0 (highest privilege)
+const UInt8 ACCESS_PRIV_RING1   = 1 << 5; // Ring 1
+const UInt8 ACCESS_PRIV_RING2   = 2 << 5; // Ring 2
+const UInt8 ACCESS_PRIV_RING3   = 3 << 5; // Ring 3 (user mode)
+const UInt8 ACCESS_PRESENT      = 1 << 7; // Bit 7: Segment present in memory
+
+// ACCESS_TSS = 0x89 (10001001)
+const UInt8 ACCESS_TSS          = ACCESS_PRESENT
+                                | ACCESS_PRIV_RING0
+                                | ACCESS_ACCESSED
+                                | 0x08; // Type 1000 (TSS Available)
 
 // Granularity byte
 const UInt8 GRANULARITY_4K     = 1 << 7;
@@ -120,7 +140,7 @@ fn void init_gdt() {
     gdt.tss.length = TSSPtr.sizeof - 1;
     gdt.tss.base_low = (UInt16)(tss_base & 0xFFFF);
     gdt.tss.base_middle = (UInt8)((tss_base >> 16) & 0xFF);
-    gdt.tss.access = ACCESS_TSS; // 0x89
+    gdt.tss.access = ACCESS_TSS;
     gdt.tss.granularity = (UInt8)((gdt.tss.length >> 16) & 0x0F);
     gdt.tss.base_high = (UInt8)((tss_base >> 24) & 0xFF);
     gdt.tss.base_upper32 = (UInt32)((tss_base >> 32) & 0xFFFFFFFF);
